@@ -248,6 +248,7 @@ const TAX_RATE = 0.10; // 10% tax
 - Client-side validation for coupon codes
 - No sensitive data storage
 - Production build removes development tools
+- **SSM Secrets**: No secrets required for current MVP. See [SSM_SECRETS_INVESTIGATION.md](./SSM_SECRETS_INVESTIGATION.md) for details on AWS Amplify SSM setup warning
 
 ## Future Enhancements
 
@@ -291,6 +292,9 @@ npm test
 - Verify `amplify.yml` is in the root directory
 - Check AWS credentials and permissions
 - Review Amplify Console build logs
+- **Cache Warning (First Deployment)**: If you see "Unable to write cache" with 404 error on first deployment, see [AMPLIFY_CACHE_INVESTIGATION.md](./AMPLIFY_CACHE_INVESTIGATION.md) - this is normal and resolves automatically
+- **SSM Secrets Warning**: If you see "Failed to set up process.env.secrets" warning, see [SSM_SECRETS_INVESTIGATION.md](./SSM_SECRETS_INVESTIGATION.md) - this warning is benign for the current MVP
+- **All Warnings**: See [AWS_AMPLIFY_WARNINGS.md](./AWS_AMPLIFY_WARNINGS.md) for quick reference on all AWS Amplify warnings
 
 ## License
 
