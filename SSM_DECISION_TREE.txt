@@ -1,0 +1,182 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                AWS AMPLIFY SSM SECRETS DECISION TREE                      ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+                         Start: Building with Amplify
+                                      │
+                                      ▼
+                ┌─────────────────────────────────────────┐
+                │ Does your application use any of these? │
+                └─────────────────────────────────────────┘
+                                      │
+                    ┌─────────────────┴─────────────────┐
+                    ▼                                   ▼
+            ┌───────────────┐                   ┌──────────────┐
+            │      YES      │                   │      NO      │
+            └───────────────┘                   └──────────────┘
+                    │                                   │
+                    ▼                                   ▼
+    ┌───────────────────────────────┐      ┌────────────────────────┐
+    │  What type of integration?    │      │  SSM NOT REQUIRED! ✅  │
+    └───────────────────────────────┘      │                        │
+                    │                       │  Warning is benign     │
+         ┌──────────┴──────────┐           │  Application works OK  │
+         ▼                     ▼            └────────────────────────┘
+    ┌─────────┐         ┌─────────┐
+    │ Runtime │         │  Build  │
+    │ Secrets │         │ Secrets │
+    └─────────┘         └─────────┘
+         │                     │
+         ▼                     ▼
+┌─────────────────┐   ┌─────────────────┐
+│ Configure SSM:  │   │ Configure SSM:  │
+│ ✓ API Keys      │   │ ✓ Build tokens  │
+│ ✓ DB Passwords  │   │ ✓ Deploy keys   │
+│ ✓ Auth Tokens   │   │ ✓ CI/CD vars    │
+└─────────────────┘   └─────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    COMMON SCENARIOS EXPLAINED                             ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Scenario 1: Static React App (CURRENT STATE)                           │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Description: Pure client-side app with hardcoded data                  │
+│ SSM Required: NO ❌                                                     │
+│ Warning Expected: YES ⚠️                                                │
+│ Application Works: YES ✅                                               │
+│ Action: Ignore warning, document for future reference                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Scenario 2: App with Backend API                                       │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Description: Frontend calls REST/GraphQL API                           │
+│ SSM Required: YES ✅                                                    │
+│ Parameters Needed:                                                      │
+│   • API_ENDPOINT (String)                                               │
+│   • API_KEY (SecureString)                                              │
+│ SSM Path: /amplify/{APP_ID}/{ENV}/API_ENDPOINT                          │
+│ Code Usage: process.env.REACT_APP_API_ENDPOINT                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Scenario 3: App with Payment Processing                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Description: Stripe, PayPal, or other payment integration              │
+│ SSM Required: YES ✅                                                    │
+│ Parameters Needed:                                                      │
+│   • STRIPE_PUBLIC_KEY (String) - visible to users anyway               │
+│   • STRIPE_SECRET_KEY (SecureString) - backend only                     │
+│ SSM Path: /amplify/{APP_ID}/{ENV}/STRIPE_PUBLIC_KEY                     │
+│ Code Usage: process.env.REACT_APP_STRIPE_PUBLIC_KEY                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Scenario 4: App with Authentication                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Description: Cognito, Auth0, or custom auth                            │
+│ SSM Required: YES ✅                                                    │
+│ Parameters Needed:                                                      │
+│   • COGNITO_USER_POOL_ID (String)                                       │
+│   • COGNITO_CLIENT_ID (String)                                          │
+│   • COGNITO_REGION (String)                                             │
+│ SSM Path: /amplify/{APP_ID}/{ENV}/COGNITO_USER_POOL_ID                  │
+│ Code Usage: process.env.REACT_APP_COGNITO_USER_POOL_ID                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                 SSM PARAMETER CONFIGURATION STEPS                         ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Step 1: Identify Your App ID and Environment
+┌─────────────────────────────────────────────────────────────────────────┐
+│ App ID: d39hijjwy5dz8q                                                  │
+│ Environment: ecommerce-shopping-cart-20251221-043801                    │
+│ Base Path: /amplify/d39hijjwy5dz8q/ecommerce-shopping-cart-20251221... │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Step 2: Create SSM Parameter (AWS Console)
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1. Go to AWS Systems Manager > Parameter Store                         │
+│ 2. Click "Create parameter"                                             │
+│ 3. Enter name: /amplify/{APP_ID}/{ENV}/{PARAM_NAME}                     │
+│ 4. Choose type: SecureString (sensitive) or String (non-sensitive)     │
+│ 5. Choose KMS key: "My current account" (default)                      │
+│ 6. Enter value                                                          │
+│ 7. Click "Create parameter"                                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Step 3: Use in Your Code
+┌─────────────────────────────────────────────────────────────────────────┐
+│ // For React apps, use REACT_APP_ prefix                               │
+│ const apiKey = process.env.REACT_APP_API_KEY;                           │
+│                                                                          │
+│ // Amplify injects SSM values during build                             │
+│ // Parameter: /amplify/{APP_ID}/{ENV}/API_KEY                           │
+│ // Available as: process.env.REACT_APP_API_KEY                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Step 4: Trigger New Build
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1. Push new commit to trigger automatic build, OR                      │
+│ 2. Manually trigger build in Amplify Console                           │
+│ 3. SSM parameters are loaded during build phase                        │
+│ 4. Warning should disappear once parameters are detected               │
+└─────────────────────────────────────────────────────────────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    CURRENT APPLICATION STATUS                             ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+                            ┌──────────────────┐
+                            │  Current Status  │
+                            └──────────────────┘
+                                      │
+                     ┌────────────────┴────────────────┐
+                     ▼                                 ▼
+            ┌────────────────┐                ┌────────────────┐
+            │ SSM Configured │                │ App Functional │
+            │      NO ❌     │                │     YES ✅     │
+            └────────────────┘                └────────────────┘
+                     │                                 │
+                     ▼                                 ▼
+            ┌────────────────┐                ┌────────────────┐
+            │ Warning Shows  │                │ Features Work  │
+            │     YES ⚠️     │                │     YES ✅     │
+            └────────────────┘                └────────────────┘
+                     │                                 │
+                     ▼                                 ▼
+            ┌────────────────┐                ┌────────────────┐
+            │ Action Needed  │                │  User Impact   │
+            │      NO ❌     │                │     NONE ✅    │
+            └────────────────┘                └────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                         REFERENCE LINKS                                   ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+📄 Detailed Investigation → SSM_SECRETS_INVESTIGATION.md
+📋 Quick Reference       → AWS_AMPLIFY_WARNINGS.md
+📊 Executive Summary     → EXECUTIVE_SUMMARY.md
+📖 Application Guide     → README.md
+
+AWS Documentation:
+• AWS Amplify Environment Secrets:
+  https://docs.aws.amazon.com/amplify/latest/userguide/environment-secrets.html
+
+• AWS Systems Manager Parameter Store:
+  https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html
+
+• React Environment Variables:
+  https://create-react-app.dev/docs/adding-custom-environment-variables/
+
+
+═══════════════════════════════════════════════════════════════════════════
+                         Last Updated: 2025-12-21
+═══════════════════════════════════════════════════════════════════════════
