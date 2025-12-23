@@ -42,6 +42,19 @@
   flex: 1;
 }
 
+.product-category {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  align-self: flex-start;
+}
+
 .product-name {
   font-size: 1.25rem;
   font-weight: 600;
@@ -103,4 +116,17 @@
   .product-price {
     font-size: 1.3rem;
   }
+}
+
+.product-category {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  align-self: flex-start;
 }

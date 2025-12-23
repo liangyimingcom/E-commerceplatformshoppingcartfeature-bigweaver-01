@@ -10,6 +10,9 @@ function ProductCatalog({ products, onAddToCart }) {
             <img src={product.image} alt={product.name} />
           </div>
           <div className="product-info">
+            {product.category && (
+              <span className="product-category">{product.category}</span>
+            )}
             <h3 className="product-name">{product.name}</h3>
             <p className="product-description">{product.description}</p>
             <div className="product-footer">
